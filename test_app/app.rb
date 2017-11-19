@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'pry'
 require 'sqlite3'
+require 'active_record'
 
 
 def hash_sort_def(str)
@@ -71,16 +72,21 @@ end
 
 post '/browser_graph' do
 
-  wak = "<caption>単語数ランキング</caption><thead><tr><td></td>"
+  # データベースへの接続
+  ActiveRecord::Base.establish_connection(
+    adapter:   'sqlite3',
+    database:  './test.db'
+  )
 
   browser_hash = Hash.new { |h,k| h[k] = {} }
   str_all = []
   
-  db = SQLite3::Database.new('test.db')
-  db.results_as_hash = true
-  db.execute('select * from test') do |row|
-    browser_name = row["browser"]
-    row["text"].split(" ").each do |str|
+  class Test < ActiveRecord::Base
+  end
+  
+  Test.all.each {|row|
+    browser_name = row.browser
+    row.text.split(" ").each do |str|
       unless str_all.include?(str) then #全ての単語の情報を配列に入れる
         str_all.push(str)
       end
@@ -89,9 +95,12 @@ post '/browser_graph' do
       else
         browser_hash[browser_name][str] = 1
       end 
-    end
-  end
-  db.close
+    end  	
+  }
+  wak = "<caption>単語数ランキング</caption><thead><tr><td></td>"
+
+
+
   
   browser_hash.each do |key, value| #各ブラウザで単語の順番を揃える
     str_all.each do |str|
