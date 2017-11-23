@@ -18,14 +18,22 @@ def hash_sort_def(str)
   return hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
 end
 
-
 get '/' do
   erb :index  
 end
 
 post '/add_to_database' do
 
+  # データベースへの接続
+  ActiveRecord::Base.establish_connection(
+    adapter:   'sqlite3',
+    database:  './test.db'
+  )
+  
+  #UserAgentの情報を取得
   ua = request.env['HTTP_USER_AGENT']
+  
+  #ブラウザを判別
   browser = if ua.include? "MSIE"
     "ie"
   elsif ua.include? "Firefox"
@@ -39,35 +47,47 @@ post '/add_to_database' do
   else
     "others"
   end
+
+  #テキストエリアの文章のスペース前後の記号を除去
+  deleting_symbol_ary = []
   
-  db = SQLite3::Database.new('test.db')
-  db.execute("insert into test (browser,text) values ('#{browser}','#{params[:foo]}')")
-  db.close
+  params[:foo].split(" ").each do |str|
+    deleting_symbol = str.gsub(/^[^0-9A-Za-z]|[^0-9A-Za-z]$/, "")
+    deleting_symbol_ary.push(deleting_symbol)
+  end
   
+  class Test < ActiveRecord::Base
+  end
+  
+  #DBにブラウザと記号を消去した文字列を追加
+  test = Test.new
+  test.browser = browser
+  test.text = deleting_symbol_ary.join(" ")
+  test.save
+  
+  #ここまでうまく動作したことを確認するためにとりあえず返しているだけ。
   return browser
 end
 
 post '/post' do
+  #テキストエリアの文字数をカウント
   params[:foo].length.to_s
 end
 
 post '/most' do
-input_value = params[:foo]
-
-    most_many_char_count = 0
-    input_value_char_count = 0
-    input_value.chars { |ch|
- 
-      input_value_char_count = input_value.count(ch)
-          
+  input_value = params[:foo]
+  
+  most_many_char_count = 0
+  input_value_char_count = 0
+  input_value.chars { |ch|
+    input_value_char_count = input_value.count(ch)
     if most_many_char_count < input_value_char_count then
       most_many_char_count = input_value_char_count
       content_type :text
       @data = ch
     end
-      
-    }
-    return @data
+  }
+  return @data
 end
 
 post '/browser_graph' do
