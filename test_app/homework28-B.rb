@@ -4,20 +4,28 @@
 
 class FileManager
     def initialize()
-	   
+	    @file_name = []
     end
 
     def add_file(f)
         if f.match(/(.*)(?:\.([^.]+$))/)
+            @file_name << f
             return true
         else
             return false
         end
     end
 
+    def kakunin # 配列の中身確認用
+        p @file_name
+    end
+    
 end
 
 fm = FileManager.new()
  
-p (fm.add_file("aaa.txt"))
-p (fm.add_file("bbb"))
+p fm.add_file("bbb.txt")
+p fm.add_file("aaa.jpg")
+p fm.add_file("aaa")
+ 
+fm.kakunin
