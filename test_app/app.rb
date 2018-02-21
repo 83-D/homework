@@ -50,9 +50,11 @@ post '/add_to_database' do
 
   #テキストエリアの文章のスペース前後の記号を除去
   deleting_symbol_ary = []
-  
   params[:foo].split(" ").each do |str|
-    deleting_symbol = str.gsub(/^[^0-9A-Za-z]|[^0-9A-Za-z]$/, "")
+    #deleting_symbol = str.gsub(/^[^0-9A-Za-z]|[^0-9A-Za-z]$/, "")
+    #deleting_symbol = str.gsub(/^[^0-9A-Za-z]*|[^0-9A-Za-z]*$/, "")
+    deleting_symbol = str.gsub(/^\W*|\W*$/, "")
+    
     deleting_symbol_ary.push(deleting_symbol)
   end
   
