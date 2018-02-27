@@ -1,2 +1,2 @@
-test_app/vendor/
-test_app/**/*.db
+vendor/
+**/*.db
